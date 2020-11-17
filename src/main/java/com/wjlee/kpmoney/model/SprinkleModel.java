@@ -4,21 +4,24 @@ import java.util.Date;
 import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.OneToMany;
+import javax.persistence.Table;
 
 @Entity
+@Table(name="tb_sprinkle_money")
 public class SprinkleModel {
 	
-	private String userId;
+	@Id
 	private String token;
-	private Date sprinkleDate;
+	private String userId;	
+	private Date regDate;
 	private Long sprinkleAmt;
 	
 	@OneToMany
-	@JoinTable(name="", joinColumns=@JoinColumn(name="token"),
-						inverseJoinColumns = @JoinColumn(name="token"))			
+	@JoinTable(name="", joinColumns=@JoinColumn(name="token"))			
 	private List<ReceivedMoneyModel> receivedMoneyList;
 	
 	public String getToken() {
@@ -40,13 +43,13 @@ public class SprinkleModel {
 	public void setReceivedMoneyList(List<ReceivedMoneyModel> receivedMoneyList) {
 		this.receivedMoneyList = receivedMoneyList;
 	}
-
-	public Date getSprinkleDate() {
-		return sprinkleDate;
+	
+	public Date getRegDate() {
+		return regDate;
 	}
 
-	public void setSprinkleDate(Date sprinkleDate) {
-		this.sprinkleDate = sprinkleDate;
+	public void setRegDate(Date regDate) {
+		this.regDate = regDate;
 	}
 
 	public Long getSprinkleAmt() {
