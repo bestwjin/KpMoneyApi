@@ -1,66 +1,37 @@
 package com.wjlee.kpmoney.model;
 
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.GenerationType;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.JoinTable;
-import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
+
+import org.springframework.data.annotation.CreatedDate;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+
+import lombok.Data;
 
 @Entity
+@Data
 @Table(name="tb_sprinkle_money")
 public class SprinkleModel {
 	
 	@Id
+	@GeneratedValue(strategy=GenerationType.TABLE)	
 	private String token;
-	private String userId;	
+	
+	private String userId;
+	
+	@Temporal(TemporalType.TIMESTAMP)
+	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+	@CreatedDate
 	private Date regDate;
+
 	private Long sprinkleAmt;
-	
-	@OneToMany
-	@JoinTable(name="", joinColumns=@JoinColumn(name="token"))			
-	private List<ReceivedMoneyModel> receivedMoneyList;
-	
-	public String getToken() {
-		return token;
-	}
-
-	public String getUserId() {
-		return userId;
-	}
-
-	public void setUserId(String userId) {
-		this.userId = userId;
-	}
-
-	public List<ReceivedMoneyModel> getReceivedMoneyList() {
-		return receivedMoneyList;
-	}
-
-	public void setReceivedMoneyList(List<ReceivedMoneyModel> receivedMoneyList) {
-		this.receivedMoneyList = receivedMoneyList;
-	}
-	
-	public Date getRegDate() {
-		return regDate;
-	}
-
-	public void setRegDate(Date regDate) {
-		this.regDate = regDate;
-	}
-
-	public Long getSprinkleAmt() {
-		return sprinkleAmt;
-	}
-
-	public void setSprinkleAmt(Long sprinkleAmt) {
-		this.sprinkleAmt = sprinkleAmt;
-	}
-
-	public void setToken(String token) {
-		this.token = token;
-	}
+	private int receiverCount;
 }
