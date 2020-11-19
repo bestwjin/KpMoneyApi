@@ -2,9 +2,9 @@ package com.wjlee.kpmoney.service;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -101,19 +101,22 @@ public class SprinkleService {
 	public void createDistrbtInfo(SprinkleModel sprinkleModel) {
 		int rcvCount = sprinkleModel.getReceiverCount();
 		long sprinkleAmt = sprinkleModel.getSprinkleAmt();
-		DistrbtModel distrbtModel = new DistrbtModel(sprinkleModel);
+		
+		List<DistrbtModel> distrbtList = new ArrayList<DistrbtModel>();
 		
 		// 가능 잔액범위내에서 랜덤금액을 생성하여 분배한다.
-		while(rcvCount > 0) {	
+		while(rcvCount > 0) {
+			DistrbtModel distrbtModel = new DistrbtModel(sprinkleModel);
 			distrbtModel.setRcvAmt((long)(Math.random()*sprinkleAmt)+1);
 			sprinkleAmt -= distrbtModel.getRcvAmt(); 
 			
 			// 마지막은 남은 잔액합산
 			if(rcvCount==1) distrbtModel.setRcvAmt(distrbtModel.getRcvAmt() + sprinkleAmt);
-			
-			log.debug("모델={}",distrbtModel.toString());
-			distrbtRepository.saveAndFlush(distrbtModel);
+
+			distrbtList.add(distrbtModel);			
 			rcvCount--;
 		}
+		
+		distrbtRepository.saveAll(distrbtList);
 	}
 }
