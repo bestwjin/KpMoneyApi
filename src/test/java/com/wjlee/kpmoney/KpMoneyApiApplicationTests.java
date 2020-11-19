@@ -24,7 +24,7 @@ class KpMoneyApiApplicationTests {
 	
 	String[] userIdList = new String[] {"123456"};
 	String[] roomIdList = new String[] {"roomA"};
-	String token = "RBD";
+	String token = "rbd";
 	
 	@Autowired
 	MockMvc mvc;
@@ -35,9 +35,8 @@ class KpMoneyApiApplicationTests {
 	@Test
 	@DisplayName("create sprinkle info")
 	public void setSpringkleInfo() throws Exception {
-		
 		//when
-        final ResultActions actions = mvc.perform(post("/sprinkle")
+        final ResultActions actions = mvc.perform(post("/sprinkle/create")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .header("X-USER-ID", userIdList[0])		
