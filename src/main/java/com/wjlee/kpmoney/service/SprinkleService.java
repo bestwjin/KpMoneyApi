@@ -24,9 +24,8 @@ public class SprinkleService {
 	@Autowired
 	private SprinkleRepository sprinkleRepository;
 	
-	public ResponseEntity<?> getSprinkleMoneyInfo(String token, String userId) throws ParseException {
+	public ResponseEntity<?> getSprinkleMoneyInfo(String token, String userId, String roomId) throws ParseException {		
 		
-		// x-user-id 구현 및 where 조건 추가 필요.
 		// 뿌린사람 자신의 것만 조회할 수 있으며, 그외(다른사람의 뿌리기건, 유효하지 않은 토큰의 경우 조회실패)
 		// 조회는 7일이내에만 할 수 있음
 		String searchDate = df.format(CommonUtil.addDate(new Date(), Calendar.DATE, -7));
@@ -40,8 +39,42 @@ public class SprinkleService {
 		}
 	}	
 	
+	/**
+	 * 입력
+	 * @param sprinkleModel
+	 * @return
+	 */
 	public ResponseEntity<?> createSprinkleMoney(SprinkleModel sprinkleModel) {
+		// 토큰생성
+		sprinkleModel.setToken(makeToken(sprinkleModel, ""));
+		log.debug("생성된 토큰 ==> : " + sprinkleModel.getToken());
+		
 		SprinkleModel sprikleModel = sprinkleRepository.save(sprinkleModel); 
 		return ResponseEntity.ok().body(sprikleModel);				
+	}
+	
+	
+	/**
+	 * 토큰생성 (대소문자 구별 알파벳)
+	 * @return
+	 */
+	public String makeToken(SprinkleModel sprinkleModel, String recurToken) {
+		
+		if(!"".equals(recurToken) && sprinkleRepository.findByTokenAndRoomId(recurToken, sprinkleModel.getRoomId()).orElse(null) == null) 
+			return recurToken; 
+		
+		StringBuilder sb = new StringBuilder();
+
+		// 대소문자를 구별하여 가능범위 확장
+		for(int i=0; i<3; i++) {
+			int swicher = (int) (Math.random()*2);
+			if(swicher==0) 
+				sb.append((char) (Math.random()*26+65));			
+			else 
+				sb.append((char) (Math.random()*26+97));
+		}
+		
+		// 위 상단 처음의 조건에 의하여 동일한 룸ID에 발급된 동일한 토큰이 있을경우 재생성함(recursive)
+		return makeToken(sprinkleModel, sb.toString());
 	}
 }

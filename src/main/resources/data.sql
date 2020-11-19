@@ -1,1 +1,1 @@
-insert into tb_sprinkle_money(token, reg_date, sprinkle_amt, user_id, receiver_count) values('RBD', now(), 120000, '123456', 5);
+insert into tb_sprinkle_money(user_id, room_id, token, sprinkle_amt, receiver_count, reg_date) values(123456, 'abcdef', 'rbd', 120000, 5, now());
