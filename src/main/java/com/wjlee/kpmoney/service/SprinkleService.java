@@ -7,8 +7,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,13 +15,16 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.wjlee.kpmoney.model.DistrbtModel;
 import com.wjlee.kpmoney.model.SprinkleModel;
+import com.wjlee.kpmoney.model.ResponseModel;
 import com.wjlee.kpmoney.repository.DistrbtRepository;
 import com.wjlee.kpmoney.repository.SprinkleRepository;
 import com.wjlee.kpmoney.util.CommonUtil;
 
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
 @Service
 public class SprinkleService {
-	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 	
 	@Autowired
@@ -52,20 +53,54 @@ public class SprinkleService {
 	 * @param sprinkleModel
 	 * @return
 	 */
+	@Transactional
 	public ResponseEntity<?> createSprinkleMoney(SprinkleModel sprinkleModel) {
 		// 토큰생성
 		sprinkleModel.setToken(makeToken(sprinkleModel, ""));
 		log.debug("생성된 토큰={}", sprinkleModel.getToken());
-		
 		SprinkleModel sprikleModel = sprinkleRepository.save(sprinkleModel);
 		
 		//익셉션으로 핸들링하는게 좋을듯. but 일단 기능구현부터.
 		if(!"".equals(sprinkleModel.getToken())) {
 			// 분배로직
 			createDistrbtInfo(sprinkleModel);
-		}
-		
+		}		
 		return ResponseEntity.ok().body(sprikleModel);
+	}
+	
+	
+	/**
+	 * 받기
+	 * @param token
+	 * @param userId
+	 * @param roomId
+	 * @return
+	 */
+	public ResponseEntity<ResponseModel> pickupSprinkledMoney(String token, String userId, String roomId) {
+		ResponseModel responseModel = new ResponseModel();
+		
+		// 받기 가능여부 체크
+		
+		
+		// 토큰에 해당하는 '받기가능한'건을 가져옴.
+		List<DistrbtModel> distrbtList = distrbtRepository.findByTokenAndReceivedYnFalse(token).orElse(null);
+		DistrbtModel distrbtModel = new DistrbtModel();
+		
+		if(distrbtList != null) {
+			// 무작위로 받음
+			distrbtModel = distrbtList.get((int) (Math.random()*distrbtList.size())); 
+			log.debug("할당된금액={}", distrbtModel.getRcvAmt());
+			
+			distrbtModel.setRcvUserId(userId);
+			distrbtModel.setToken(token);
+			distrbtModel.setReceivedYn(true);
+			distrbtRepository.save(distrbtModel);
+				
+		} else {
+			responseModel.setCode(9999);
+			responseModel.setMessage("받기 가능한 금액이 없습니다.");			
+		}
+		return ResponseEntity.ok(responseModel);
 	}
 	
 	
@@ -73,7 +108,6 @@ public class SprinkleService {
 	 * 토큰생성 (대소문자 구별 알파벳)
 	 * @return
 	 */
-	@Transactional
 	public String makeToken(SprinkleModel sprinkleModel, String recurToken) {
 		
 		if(!"".equals(recurToken) && sprinkleRepository.findByTokenAndRoomId(recurToken, sprinkleModel.getRoomId()).orElse(null) == null) 
@@ -108,15 +142,14 @@ public class SprinkleService {
 		while(rcvCount > 0) {
 			DistrbtModel distrbtModel = new DistrbtModel(sprinkleModel);
 			distrbtModel.setRcvAmt((long)(Math.random()*sprinkleAmt)+1);
-			sprinkleAmt -= distrbtModel.getRcvAmt(); 
+			sprinkleAmt -= distrbtModel.getRcvAmt();
 			
-			// 마지막은 남은 잔액합산
+			// 마지막건은 남은 잔액합산
 			if(rcvCount==1) distrbtModel.setRcvAmt(distrbtModel.getRcvAmt() + sprinkleAmt);
 
 			distrbtList.add(distrbtModel);			
 			rcvCount--;
 		}
-		
 		distrbtRepository.saveAll(distrbtList);
 	}
 }

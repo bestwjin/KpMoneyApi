@@ -12,8 +12,9 @@ create table IF NOT EXISTS tb_distrbt (
 	seq bigint IDENTITY primary key,
 	sprinkle_seq bigint not null, 
 	token char(3) not null, 
-	rcv_user_id varchar(20),	
-	rcv_amt long,
+	rcv_room_id varchar(20) not null, 
+	rcv_user_id varchar(20),
+	rcv_amt long not null,
 	received_yn boolean default false, 
 	reg_date datetime	
 ) engine=InnoDB;

@@ -16,6 +16,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
+import com.sun.istack.NotNull;
 
 import lombok.Data;
 
@@ -25,10 +26,11 @@ import lombok.Data;
 @Table(name="tb_sprinkle")
 public class SprinkleModel {
 	
-	@Id
+	@Id	
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int seq;
 	
+	@NotNull
 	@Column(columnDefinition="CHAR(3)")
 	private String token;
 
