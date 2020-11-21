@@ -10,5 +10,6 @@ import com.wjlee.kpmoney.model.DistrbtModel;
 
 @Repository
 public interface DistrbtRepository extends JpaRepository<DistrbtModel, String> {
-	Optional<List<DistrbtModel>> findByTokenAndReceivedYnFalse(String token);	
+	Optional<List<DistrbtModel>> findByTokenAndReceivedYnFalse(String token);
+	Optional<DistrbtModel> findByTokenAndRcvUserIdAndReceivedYnTrue(String token, String userId);
 }

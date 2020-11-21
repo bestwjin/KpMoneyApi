@@ -1,22 +1,13 @@
 package com.wjlee.kpmoney.model;
 
-import java.util.Date;
-
 import javax.persistence.Entity;
 import javax.persistence.EntityListeners;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
-
-import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import com.sun.istack.NotNull;
-
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -29,21 +20,24 @@ public class DistrbtModel {
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	@JsonIgnore
 	private int seq;
 	
+	@JsonIgnore
 	private int sprinkleSeq;
 	
+	@JsonIgnore
 	private String token;
-	private Long rcvAmt;
+	
+	private Long rcvAmt = 0L;
+	
+	@JsonIgnore
 	private String rcvRoomId;
+	
 	private String rcvUserId;
+	
+	@JsonIgnore
 	private boolean receivedYn;
-	
-	@Temporal(TemporalType.TIMESTAMP)
-	@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-	@CreatedDate
-	private Date regDate;
-	
 	
 	public DistrbtModel(SprinkleModel sprinkleModel) {
 		this.sprinkleSeq = sprinkleModel.getSeq();

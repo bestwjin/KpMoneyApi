@@ -1,17 +1,19 @@
 package com.wjlee.kpmoney.model;
 
-import java.util.Map;
+import com.wjlee.kpmoney.util.CommonCode;
 
 import lombok.Data;
 
 @Data
 public class ResponseModel {
-	private int code;
+	private String code;
 	private String message;
-	private Map<String, Object> data;
+	private String data;
 	
-	public ResponseModel() { 
-		this.code = 1000;
-		this.message = "정상처리되었습니다."; 
+	// 기본 결과값 셋팅
+	public ResponseModel() {
+		this.code = "S000";
+		this.message = CommonCode.S000;
+		this.data = "";
 	}
 }

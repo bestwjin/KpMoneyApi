@@ -8,16 +8,18 @@ import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.wjlee.kpmoney.model.DistrbtModel;
-import com.wjlee.kpmoney.model.SprinkleModel;
 import com.wjlee.kpmoney.model.ResponseModel;
+import com.wjlee.kpmoney.model.SprinkleModel;
 import com.wjlee.kpmoney.repository.DistrbtRepository;
 import com.wjlee.kpmoney.repository.SprinkleRepository;
+import com.wjlee.kpmoney.util.CommonCode;
 import com.wjlee.kpmoney.util.CommonUtil;
 
 import lombok.extern.slf4j.Slf4j;
@@ -33,44 +35,85 @@ public class SprinkleService {
 	@Autowired
 	private DistrbtRepository distrbtRepository;
 	
-	public ResponseEntity<?> getSprinkleMoneyInfo(String token, String userId, String roomId) throws ParseException {		
+	/**
+	 * 뿌리기건 조회
+	 * @param token
+	 * @param userId
+	 * @param roomId
+	 * @return
+	 * @throws ParseException
+	 * @throws JsonProcessingException
+	 */
+	public ResponseEntity<ResponseModel> getSprinkleMoneyInfo(String token, String userId, String roomId) throws ParseException, JsonProcessingException {
+		ResponseModel responseModel = new ResponseModel();
+		ObjectMapper mapper = new ObjectMapper();
 		
-		// 뿌린사람 자신의 것만 조회할 수 있으며, 그외(다른사람의 뿌리기건, 유효하지 않은 토큰의 경우 조회실패)
-		// 조회는 7일이내에만 할 수 있음
+		// 조회가능 기준일자 -7일		
 		String searchDate = df.format(CommonUtil.addDate(new Date(), Calendar.DATE, -7));
 		log.debug("뿌리기정보 조회 기준일자(7일전)={}", searchDate);
-		SprinkleModel sprinkleModel = sprinkleRepository.findByTokenAndUserIdAndRegDateGreaterThanEqual(token, userId, df.parse(searchDate));		
-				
+		
+		// 조회조건 -> 뿌린사람자신만, 뿌린지 7일이내건만 조회가능
+		SprinkleModel sprinkleModel = sprinkleRepository.findByTokenAndUserIdAndRegDateGreaterThanEqual(token, userId, df.parse(searchDate)).orElse(null);
+		
 		if(sprinkleModel == null) {
-			return new ResponseEntity<>("데이터가 존재하지 않습니다.", HttpStatus.OK);
+			responseModel.setCode("E000");
+			responseModel.setMessage(CommonCode.E000);
+			return ResponseEntity.ok().body(responseModel);
 		} else {
-			return ResponseEntity.ok().body(sprinkleModel);
+			// 조회가능건이 있으면 정보를 json형태로 전송.
+			responseModel.setData(mapper.writeValueAsString(sprinkleModel));
 		}
+		
+		return ResponseEntity.ok().body(responseModel);
 	}	
 	
 	/**
-	 * 입력
+	 * 입력(뿌리기)
 	 * @param sprinkleModel
 	 * @return
 	 */
 	@Transactional
-	public ResponseEntity<?> createSprinkleMoney(SprinkleModel sprinkleModel) {
+	public ResponseEntity<?> createSprinkleMoney(String userId, String roomId, long sprinkleAmt, int receiverCount) {
+		ResponseModel responseModel = new ResponseModel();
+		SprinkleModel sprinkleModel = new SprinkleModel(userId, roomId, sprinkleAmt, receiverCount);
+		
+		/**************************************************
+		 * 뿌리기 입력값 검증
+		 **************************************************/
+		// 뿌리기 금액 검증(1원이상이어야 함)
+		if(sprinkleAmt < 1) {
+			responseModel.setCode("E006");
+			responseModel.setMessage(CommonCode.E006);
+			return ResponseEntity.ok().body(responseModel);
+		}
+		// 뿌릴인원 수 검증
+		if(receiverCount < 1) {
+			responseModel.setCode("E007");
+			responseModel.setMessage(CommonCode.E007);
+			return ResponseEntity.ok().body(responseModel);
+		}
+		// 각 인원은 1원이상을 받아가야함.
+		if(sprinkleAmt/receiverCount < 1) {
+			responseModel.setCode("E008");
+			responseModel.setMessage(CommonCode.E008);
+			return ResponseEntity.ok().body(responseModel);
+		}
+		
 		// 토큰생성
 		sprinkleModel.setToken(makeToken(sprinkleModel, ""));
 		log.debug("생성된 토큰={}", sprinkleModel.getToken());
-		SprinkleModel sprikleModel = sprinkleRepository.save(sprinkleModel);
+		String token = sprinkleRepository.save(sprinkleModel).getToken();
+
+		// 금액분배
+		if(!"".equals(sprinkleModel.getToken())) createDistrbtInfo(sprinkleModel);
 		
-		//익셉션으로 핸들링하는게 좋을듯. but 일단 기능구현부터.
-		if(!"".equals(sprinkleModel.getToken())) {
-			// 분배로직
-			createDistrbtInfo(sprinkleModel);
-		}		
-		return ResponseEntity.ok().body(sprikleModel);
+		responseModel.setData(token);
+		return ResponseEntity.ok().body(responseModel);
 	}
 	
 	
 	/**
-	 * 받기
+	 * 받기 aka 줍기
 	 * @param token
 	 * @param userId
 	 * @param roomId
@@ -78,9 +121,46 @@ public class SprinkleService {
 	 */
 	public ResponseEntity<ResponseModel> pickupSprinkledMoney(String token, String userId, String roomId) {
 		ResponseModel responseModel = new ResponseModel();
+		/**************************************************
+		 * 받기 가능여부 검증
+		 **************************************************/
+		SprinkleModel sprinkleModel = sprinkleRepository.findByToken(token).orElse(null);
 		
-		// 받기 가능여부 체크
+		// 토큰에 해당하는 뿌리기건이 존재하지 않음
+		if(sprinkleModel == null) {
+			responseModel.setCode("E002");
+			responseModel.setMessage(CommonCode.E002);		
+			return ResponseEntity.ok().body(responseModel);
+		}
 		
+		// 자신이 뿌리기 한 건은 자신이 받을 수 없음.
+		if(sprinkleModel.getUserId().equals(userId)) {
+			responseModel.setCode("E002");
+			responseModel.setMessage(CommonCode.E002);
+			return ResponseEntity.ok().body(responseModel);
+		}
+		
+		// 뿌린지 10분이 지난 요청은 받기 실패
+		int compareDate = sprinkleModel.getRegDate().compareTo(CommonUtil.addDate(new Date(), Calendar.MINUTE, -10));
+		if(compareDate < 0) {
+			responseModel.setCode("E003");
+			responseModel.setMessage(CommonCode.E003);
+			return ResponseEntity.ok().body(responseModel);
+		}
+		
+		// 뿌리기 호출 대화방과 동일 대화방인유저인지 확인
+		if(!sprinkleModel.getRoomId().equals(roomId)) {
+			responseModel.setCode("E004");
+			responseModel.setMessage(CommonCode.E004);
+			return ResponseEntity.ok().body(responseModel);
+		}
+		
+		// 먼저 받은 건이 없는지 확인(뿌리기당 한번만 받을 수 있음)
+		if(distrbtRepository.findByTokenAndRcvUserIdAndReceivedYnTrue(token, userId).orElse(null) != null) {
+			responseModel.setCode("E005");
+			responseModel.setMessage(CommonCode.E005);
+			return ResponseEntity.ok().body(responseModel);
+		}
 		
 		// 토큰에 해당하는 '받기가능한'건을 가져옴.
 		List<DistrbtModel> distrbtList = distrbtRepository.findByTokenAndReceivedYnFalse(token).orElse(null);
@@ -94,15 +174,21 @@ public class SprinkleService {
 			distrbtModel.setRcvUserId(userId);
 			distrbtModel.setToken(token);
 			distrbtModel.setReceivedYn(true);
-			distrbtRepository.save(distrbtModel);
-				
+			String rcvAmt = String.valueOf(distrbtRepository.save(distrbtModel).getRcvAmt());
+			responseModel.setData(rcvAmt);
+			
+			// 뿌리기테이블에 받은금액을 더해줌.
+			sprinkleModel.setReceivedAmt(sprinkleModel.getReceivedAmt()+Long.parseLong(rcvAmt));
+			sprinkleRepository.save(sprinkleModel);
+			
 		} else {
-			responseModel.setCode(9999);
-			responseModel.setMessage("받기 가능한 금액이 없습니다.");			
+			responseModel.setCode("E001");
+			responseModel.setMessage(CommonCode.E001);
+			return ResponseEntity.ok().body(responseModel);
 		}
+		
 		return ResponseEntity.ok(responseModel);
 	}
-	
 	
 	/**
 	 * 토큰생성 (대소문자 구별 알파벳)
