@@ -2,14 +2,16 @@
 
 ### 목적
 
-- 뿌리기, 받기, 조회 기능을 수행하는 간소화된 REST API를 구현
+- 뿌리기, 받기, 조회 기능을 수행하는 간소화된 REST API를 구현  
 
+  
 ### 개발환경
 
 - SpringBoot 2.4.0 with Maven
 - JPA with H2 Database(in memory)
 
     H2 데이터베이스는 in memory 방식으로 사용(테스트용도로 간단하게 사용하기 위함)하여 데이터 영속성이 주어지지 않았으며 휘발성임. 
+
 
 ### 핵심문제해결전략
 
@@ -25,23 +27,21 @@
     - 특별히 검증 및 결과값을 사용자에게 알려줄만한 조건들은 각 조건을 데이터와 검증하고 결과값 리턴
     - 불필요한 쿼리생성을 피하고 간단히 구성하기 위해 쿼리메소드 방식을 사용
 
-4. 다수의 서버, 다수의 인스턴스로 동작
-... 구현중
 
 ### API 요청 및 응답 예제
 
 1. **뿌리기**
 
-    요청
+    **요청**
 
-    ```json
+    ```
     POST /sprinkle/create/{뿌릴금액}/{인원수}
     // /create/120000/500
     ```
 
-    결과
+    **결과**
 
-    ```json
+    ```
     {
         "code": "S000",
         "message": "정상적으로 처리되었습니다.",
@@ -51,16 +51,16 @@
 
 2. **받기**
 
-    요청
+    **요청**
 
-    ```json
+    ```java
     PUT /sprinkle/pickup/{토큰값}
     // /sprinkle/pickup/MVF
     ```
 
     **결과**
 
-    ```json
+    ```java
     {
         "code": "S000",
         "message": "정상적으로 처리되었습니다.",
@@ -70,19 +70,30 @@
 
 3. **조회**
 
-    요청
+    **요청**
 
-    ```json
+    ```java
     GET /sprinkle/{토큰값}
     // /sprinkle/MVF
     ```
 
     **결과**
 
-    ```json
+    ```java
     {
         "code": "S000",
         "message": "정상적으로 처리되었습니다.",
-        "data": "{\"regDate\":\"2020-11-21 15:33:30\",\"sprinkleAmt\":120000,\"receivedAmt\":8457,\"distrbtList\":[{\"rcvAmt\":8457,\"rcvUserId\":\"123469\"}]}"
+        "data": 
+	          {
+		            "regDate":"2020-11-21 15:33:30",
+		            "sprinkleAmt":120000,
+		            "receivedAmt":8457,
+		            "distrbtList":[
+			              {
+				                "rcvAmt":8457,
+				                "rcvUserId":"123469"
+			              }
+		            ]
+	            }
     }
     ```
