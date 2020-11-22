@@ -4,12 +4,14 @@
 
 - 뿌리기, 받기, 조회 기능을 수행하는 간소화된 REST API를 구현
 
+
 ### 개발환경
 
 - SpringBoot 2.4.0 with Maven
 - JPA with H2 Database(in memory)
 
     H2 데이터베이스는 in memory 방식으로 사용(테스트용도로 간단하게 사용하기 위함)하여 데이터 영속성이 주어지지 않았으며 휘발성임. 
+
 
 ### 핵심문제해결전략
 
@@ -27,6 +29,7 @@
 
 4. 다수의 서버, 다수의 인스턴스로 동작
 ... 구현중
+
 
 ### API 요청 및 응답 예제
 
@@ -53,14 +56,14 @@
 
     요청
 
-    ```json
+    ```
     PUT /sprinkle/pickup/{토큰값}
     // /sprinkle/pickup/MVF
     ```
 
     **결과**
 
-    ```json
+    ```
     {
         "code": "S000",
         "message": "정상적으로 처리되었습니다.",
@@ -72,14 +75,14 @@
 
     요청
 
-    ```json
+    ```
     GET /sprinkle/{토큰값}
     // /sprinkle/MVF
     ```
 
     **결과**
 
-    ```json
+    ```
     {
         "code": "S000",
         "message": "정상적으로 처리되었습니다.",
