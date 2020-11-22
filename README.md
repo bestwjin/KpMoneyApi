@@ -86,6 +86,17 @@
     {
         "code": "S000",
         "message": "정상적으로 처리되었습니다.",
-        "data": "{\"regDate\":\"2020-11-21 15:33:30\",\"sprinkleAmt\":120000,\"receivedAmt\":8457,\"distrbtList\":[{\"rcvAmt\":8457,\"rcvUserId\":\"123469\"}]}"
+        "data": 
+	          {
+		            "regDate":"2020-11-21 15:33:30",
+		            "sprinkleAmt":120000,
+		            "receivedAmt":8457,
+		            "distrbtList":[
+			              {
+				                "rcvAmt":8457,
+				                "rcvUserId":"123469"
+			              }
+		            ]
+	            }
     }
     ```
