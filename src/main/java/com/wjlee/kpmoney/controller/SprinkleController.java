@@ -34,11 +34,11 @@ public class SprinkleController {
 	 */
 	@GetMapping(value="/{token}")
 	public ResponseEntity<?> getSprinkleMoneyInfo(
-										@RequestHeader(value="X-USER-ID", required = true) String userId,
-										@RequestHeader(value="X-ROOM-ID", required = true) String roomId,
-										@PathVariable("token") String token) throws ParseException, JsonProcessingException 
+			@RequestHeader(value="X-USER-ID", required = true) String userId,
+			@RequestHeader(value="X-ROOM-ID", required = true) String roomId,
+			@PathVariable("token") String token) throws ParseException, JsonProcessingException 
 	{
-		log.debug("Token={}",token);
+		log.debug("'{}'이 Token={} 조회요청", userId, token);
 		return sprinkleService.getSprinkleMoneyInfo(token, userId, roomId);	
 	}
 	
@@ -50,10 +50,10 @@ public class SprinkleController {
 	 */
 	@PostMapping(value = "/create/{sprinkleAmt}/{receiverCount}")
 	public ResponseEntity<?> createSprinkleMoney(
-										@RequestHeader(value="X-USER-ID", required = true) String userId,
-										@RequestHeader(value="X-ROOM-ID", required = true) String roomId,
-										@PathVariable("sprinkleAmt") long sprinkleAmt, 
-										@PathVariable("receiverCount") int receiverCount) 
+			@RequestHeader(value="X-USER-ID", required = true) String userId,
+			@RequestHeader(value="X-ROOM-ID", required = true) String roomId,
+			@PathVariable("sprinkleAmt") long sprinkleAmt, 
+			@PathVariable("receiverCount") int receiverCount) 
 	{
 		log.debug("'{}'이 뿌리기 요청 ", userId);
 		log.debug("입력 금액={} 받을사람수={} ", sprinkleAmt, receiverCount);
@@ -69,11 +69,11 @@ public class SprinkleController {
 	 */
 	@PutMapping(value="/pickup/{token}")
 	public ResponseEntity<?> pickupSprinkledMoney(
-										@RequestHeader(value="X-USER-ID", required = true) String userId,
-										@RequestHeader(value="X-ROOM-ID", required = true) String roomId, 
-										@PathVariable("token") String token) 
+			@RequestHeader(value="X-USER-ID", required = true) String userId,
+			@RequestHeader(value="X-ROOM-ID", required = true) String roomId, 
+			@PathVariable("token") String token) 
 	{
-		log.debug("'{}'이 '{}'토큰으로 받기 요청 ", userId, token);
+		log.debug("'{}'이 '{}' 받기 요청 ", userId, token);
 		return sprinkleService.pickupSprinkledMoney(token, userId, roomId);
 	}
 }

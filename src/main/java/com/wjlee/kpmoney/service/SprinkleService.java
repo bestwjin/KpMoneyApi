@@ -128,8 +128,8 @@ public class SprinkleService {
 		
 		// 토큰에 해당하는 뿌리기건이 존재하지 않음
 		if(sprinkleModel == null) {
-			responseModel.setCode("E002");
-			responseModel.setMessage(CommonCode.E002);		
+			responseModel.setCode("E001");
+			responseModel.setMessage(CommonCode.E001);		
 			return ResponseEntity.ok().body(responseModel);
 		}
 		
