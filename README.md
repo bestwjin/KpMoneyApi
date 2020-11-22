@@ -37,14 +37,14 @@
 
     요청
 
-    ```json
+    ```
     POST /sprinkle/create/{뿌릴금액}/{인원수}
     // /create/120000/500
     ```
 
     결과
 
-    ```json
+    ```
     {
         "code": "S000",
         "message": "정상적으로 처리되었습니다.",
@@ -56,14 +56,14 @@
 
     요청
 
-    ```
+    ```java
     PUT /sprinkle/pickup/{토큰값}
     // /sprinkle/pickup/MVF
     ```
 
     **결과**
 
-    ```
+    ```java
     {
         "code": "S000",
         "message": "정상적으로 처리되었습니다.",
@@ -75,14 +75,14 @@
 
     요청
 
-    ```
+    ```java
     GET /sprinkle/{토큰값}
     // /sprinkle/MVF
     ```
 
     **결과**
 
-    ```
+    ```java
     {
         "code": "S000",
         "message": "정상적으로 처리되었습니다.",
