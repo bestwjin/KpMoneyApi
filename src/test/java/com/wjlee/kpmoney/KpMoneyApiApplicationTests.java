@@ -158,6 +158,40 @@ class KpMoneyApiApplicationTests {
                 .andReturn();        		
 	}
 	
+	@Test
+	@Order(7)
+	@DisplayName("조회 - 정상조회")
+	public void getSprinkleInfo() throws Exception {
+		MockHttpServletRequestBuilder builder =
+	              MockMvcRequestBuilders.get("/sprinkle/" + this.token)
+	                                    .characterEncoding("UTF-8")
+	                                    .header("X-USER-ID", userIdList[0])			
+	                                    .header("X-ROOM-ID", roomIdList[0]);
+
+		MvcResult result= mvc.perform(builder)        		
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is("S000")))                
+                .andReturn();        		
+	}
+	
+	@Test
+	@Order(7)
+	@DisplayName("조회 - 뿌린사람 자신만 조회가능")
+	public void getSprinkleInfoByOneSelf() throws Exception {
+		MockHttpServletRequestBuilder builder =
+	              MockMvcRequestBuilders.get("/sprinkle/" + this.token)
+	                                    .characterEncoding("UTF-8")
+	                                    .header("X-USER-ID", userIdList[1])			
+	                                    .header("X-ROOM-ID", roomIdList[0]);
+
+		MvcResult result= mvc.perform(builder)        		
+                .andDo(print())
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.code", is("E000")))                
+                .andReturn();        		
+	}
+	
 	// 뿌리기 토큰 생성
 	@BeforeEach
 	public void createSprinkleTokens() throws Exception {
